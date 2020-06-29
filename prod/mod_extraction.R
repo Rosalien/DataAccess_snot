@@ -127,7 +127,15 @@ tabPanel(translator$t("Accès aux données"),
           )
           ),
         column(4,
-          actionBttn(ns('starthelp'), icon = icon("question-circle"),style = "fill", color = "danger", label=translator$t("Aide"),size="sm")
+                dropdownButton(
+                            actionBttn(ns('starthelp'), icon = icon("question-circle"),style = "bordered", color = "primary", label=translator$t("Utilisation de l'application web étape par étape"),size="sm"),
+                            br(),
+                            actionBttn(ns('videoDataAccess'), icon = icon("video"),style = "bordered", color = "primary", label=translator$t("Comment utiliser Data Access ?"),size="sm"),
+                            br(),
+                            actionBttn(ns('videoChart'), icon = icon("video"),style = "bordered", color = "primary", label=translator$t("Comment construire un graphique ?"),size="sm"),
+
+                            width = "70%",icon=icon("question-circle"),circle=FALSE,label=translator$t("Aide"),status = "danger"
+                )
         )
          #column(4,style='top: -15px;',
           #radioGroupButtons(ns('selected_language'),label = "",choices = c(`<i class='fa fa-bar-chart'></i>` = translator$languages[1],`<i class='fa fa-pie-chart'></i>` = translator$languages[2]),justified = TRUE,selected = translator$languages[1])
@@ -251,12 +259,41 @@ hintjs(session, options = list("hintButtonLabel"="Hope this hint was helpful"),
 
 
 # Help button start introjs when button is pressed with custom options and events
-  observeEvent(input$starthelp,
+observeEvent(input$starthelp,
                introjs(session, options = list("nextLabel"=i18n()$t("Suivant"),
                                                "prevLabel"=i18n()$t("Précédent"),
                                                "skipLabel"=i18n()$t("Annuler")))
                                 #events = list("oncomplete"=I('alert("Glad that is over")')))
   )
+
+observeEvent(input$videoChart, {
+    show_alert(
+      title = NULL,
+      text = tags$span(
+              img(src="https://raw.githubusercontent.com/Rosalien/doc_snot/master/Videos/Demo_esquisse.gif", align = "center",height='100%',width='100%')
+      ),
+      html = TRUE,
+      btn_labels = NA,
+      closeOnClickOutside = TRUE,
+      showCloseButton = FALSE,
+      width = "80%"
+    )
+  })
+
+observeEvent(input$videoDataAccess, {
+    show_alert(
+      title = NULL,
+      text = tags$span(
+              img(src="https://raw.githubusercontent.com/Rosalien/doc_snot/master/Videos/Demo_DataAccess.gif", align = "center",height='100%',width='100%')
+      ),
+      html = TRUE,
+      btn_labels = NA,
+      closeOnClickOutside = TRUE,
+      showCloseButton = FALSE,
+      width = "80%"
+    )
+  })
+
 
 ################################################renderUI####################################
 
@@ -298,8 +335,9 @@ output$timetrendSNOT <- renderUI({
         subsetoutbdSNOT <- sqlOutputAndAggregateMean()
 
         incProgress(0.3,i18n()$t("Préparation du graphique ..."))
-        dy_graphSite <- dygraphSite(subsetoutbdSNOT[(grepl("SWC_|TS_|G_", subsetoutbdSNOT$variable)==FALSE) & subsetoutbdSNOT$variable %!in% c("WTD","TW","GPP","RE","NEE"),],frequenceSelected())
-        dy_graphTypeVariable <- dygraphTypeVariable(subsetoutbdSNOT[grepl("SWC_|TS_|G_", subsetoutbdSNOT$variable)==TRUE,],frequenceSelected())
+
+        dy_graphSite <- dygraphSite(subsetoutbdSNOT[(grepl("SWC_|TS_|G_|ETR|FC|H|LE|FCH4", subsetoutbdSNOT$variable)==FALSE) & subsetoutbdSNOT$variable %!in% c("WTD","TW","GPP","RE","NEE"),],frequenceSelected())
+        dy_graphTypeVariable <- dygraphTypeVariable(subsetoutbdSNOT[grepl("SWC_|TS_|G_|ETR|FC|H|LE|FCH4", subsetoutbdSNOT$variable)==TRUE,],frequenceSelected())
         
         # Revoir cette logique de construction (ou la fonction dygraphPiezo ?)
         #dy_graphPiezoWTD <- dygraphPiezo(subsetoutbdSNOT[subsetoutbdSNOT$variable %in% "WTD",],frequenceSelected())

@@ -1,4 +1,20 @@
+source("dependancies.R")
+source("mod_carto.R")
+#source("mod_extractiondataset.R")
+source("mod_extraction.R")
+source("mod_about.R")
 #system.time(caracdata())
+
+
+jeu <- c("frn-ges-eddycovariance")
+siteJeu <- unique(caracDataset[,code_site_station])
+caracDataset <- caracdata("en")[code_jeu %in% jeu,]
+
+# Calcul des paramètres pour interroger la base elasticsearch
+date_debut <- min(as.Date(unique(caracDataset[,mindate]),"%d-%m-%Y"))
+date_fin <- max(as.Date(unique(caracDataset[,maxdate]),"%d-%m-%Y"))
+periodeSelected <- c(date_debut,date_fin)
+
 language <- "en"    
 caracDataSensor <- caracdata(language)[order(variable)]
   variableCaracData <- c("code_jeu","code_site","code_station","code_site_station","site_nom","theme","datatype","variable","unite","mindate","maxdate","zet_coordonnees_bbox")
@@ -11,15 +27,26 @@ caracCarto <- unique(caracDataSensor[,c(variableCaracData,metadataSensor,metadat
 
 # Variables pour les tests
 input <- list()
-siteSelected <- c("lgt/bm1")
+siteSelected <- c("frn/ec1")
 frequenceSelected <- "day"
-variableSelected <- "SWC_1_1_1"
-variables <- variableSelected 
+variableSelected <- c("FCH4","FCH4_GF")
 dayNightSelected <- "day/night"
 
 input$dateBM[1] <- "06-11-2008"
 input$dateBM[2] <- "31-07-2019"
+frequence <- frequenceSelected
+meltvalue <- queryDataSNOT(variableSelected,siteSelected,periodeSelected)
+dataSNOT <- caracData[meltvalue]
+dataSelected <-    dataSNOT
+dbDayandNight <- dbDayNight(dataSNOT)
+subsetoutbdAggregate <- dbselect(dbDayandNight,dayNightSelected,frequenceSelected,siteSelected,variableSelected)
+subsetoutbdSNOT <- subsetoutbdAggregate[variable !="P_1_1_1",.(value = mean(value,na.rm=TRUE)), by = list(Date,variable,code_site_station,unite,definition,station_description,site_description,station_nom,site_nom)]
+subsetoutbdSNOT <- rbind(subsetoutbdSNOT,subsetoutbdAggregate[variable=="P_1_1_1" & complete.cases(value),.(value = sum(value,na.rm=TRUE)), by = list(Date,variable,code_site_station,unite,definition,station_description,site_description,station_nom,site_nom)])  
+subsetoutbd <- subsetoutbdSNOT
 
+keyWord <- c("Actual evapotranspiration by eddy-covariance","CO2 flux measurements by eddy-covariance","CH4 flux measurements by eddy-covariance","Sensitive heat flow by eddy-covariance","Latent heat flow by eddy-covariance")
+keyWord <- paste(keyWord,collapse = "|")
+subsetoutbd[,typeVariable:=ifelse(grepl(keyWord, definition)==TRUE,gsub(paste0("(",keyWord,").*"),"\\1",definition),definition)]
 
 recapTable <- unique(caracData[code_site_station %in% siteSelected & variable %in% variableSelected,])
 test <- caracCarto[recapTable]

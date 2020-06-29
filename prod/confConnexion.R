@@ -15,8 +15,8 @@ pool <- dbPool(
   dbname = "snotbdprod",
   host = "127.0.0.1",
   port = "5437",
-  user = "********",
-  password = "********",
+  user = "snotuserprod",
+  password = "&!uQbr@prodOn",
   idleTimeout = 3600000)
 }else{
   pool <- dbPool(

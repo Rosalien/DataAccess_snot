@@ -8,7 +8,7 @@ dygraphTypeVariable <- function(subsetoutbd,frequence){
   fullSequence <- seq(min(subsetoutbd$Date),max(subsetoutbd$Date),by=frequence)
   variables <- unique(subsetoutbd$variable)
 
-  keyWord <- c("Soil temperature","Soil water content","Soil heat flux","Température du sol","Teneur en eau du sol","Flux de chaleur dans le sol")
+  keyWord <- c("Soil temperature","Soil water content","Soil heat flux","Température du sol","Teneur en eau du sol","Flux de chaleur dans le sol","Actual evapotranspiration by eddy-covariance","CO2 flux measurements by eddy-covariance","CH4 flux measurements by eddy-covariance","Sensitive heat flow by eddy-covariance","Latent heat flow by eddy-covariance")
   keyWord <- paste(keyWord,collapse = "|")
   subsetoutbd[,typeVariable:=ifelse(grepl(keyWord, definition)==TRUE,gsub(paste0("(",keyWord,").*"),"\\1",definition),definition)]
 
@@ -66,6 +66,74 @@ dygraphTypeVariable <- function(subsetoutbd,frequence){
     dy_graph <- tagList(res)
     return(dy_graph)
 }
+
+dygraphTypeVariableEddycovariance <- function(subsetoutbd,frequence){
+  if(nrow(subsetoutbd)==0){
+    res <- NULL
+  }else{
+  dateWindow <- c(min(subsetoutbd$Date),max(subsetoutbd$Date))
+  fullSequence <- seq(min(subsetoutbd$Date),max(subsetoutbd$Date),by=frequence)
+  variables <- unique(subsetoutbd$variable)
+
+  keyWord <- c("Actual evapotranspiration by eddy-covariance","CO2 flux measurements by eddy-covariance","CH4 flux measurements by eddy-covariance","Sensitive heat flow by eddy-covariance","Latent heat flow by eddy-covariance")
+  keyWord <- paste(keyWord,collapse = "|")
+  subsetoutbd[,typeVariable:=ifelse(grepl(keyWord, definition)==TRUE,gsub(paste0("(",keyWord,").*"),"\\1",definition),definition)]
+
+  # A améliorer
+  #subsetoutbd$typeVariable <- str_replace_all(subsetoutbd$definition, "[[:punct:]]", "")
+  #subsetoutbd$typeVariable <- str_replace_all(subsetoutbd$typeVariable, "for profil", "")
+  #subsetoutbd$typeVariable <- str_replace_all(subsetoutbd$typeVariable, "[[:digit:]]", "")
+  #subsetoutbd$typeVariable <- str_trim(subsetoutbd$typeVariable,"right")
+
+  # Génération d'une time series par type de variable et par site  
+  typeVariables <- unique(subsetoutbd$typeVariable)
+
+  res <- lapply(1:length(unique(subsetoutbd$typeVariable)),function(z){#Boucle pour chaque type de variable
+    # Sélection du type de variable
+    outp <- subsetoutbd[subsetoutbd$typeVariable %in% typeVariables[z],]    
+    outp <- outp[order(outp$variable),]
+
+    lapply(unique(outp$code_site_station),function(y){#Pour chaque site, construction d'un graph
+            dataxts <- do.call("cbind", lapply(unique(outp$variable),function(x){#Pour chaque variable, construction d'une dbtimes-series
+              if(nrow(outp[code_site_station %in% y & variable %in% x,])==0){#revoir ce test
+                NULL
+              }else{  
+                tmp <-  outp[code_site_station %in% y & variable %in% x,list(Date,value)]
+                tmp2 <- setDT(data.frame(Date=fullSequence,with(tmp,tmp[match(fullSequence,tmp$Date),])))
+                db <- xts(tmp2[,value],order.by=tmp2[,Date])
+                #db <- xts(outp[site %in% y & variable %in% x,value],order.by=outp[site %in% y & variable %in% x,Date])
+                colnames(db) <- x
+                db
+              }
+            }))
+                if(grepl("year",frequence)){
+                  axisYears<-"function(d){ return d.getFullYear() }"
+                  tickerYears <- "function(a, b, pixels, opts, dygraph, vals) { 
+                                  return Dygraph.getDateAxis(a, b, Dygraph.ANNUAL, opts, dygraph)}"
+                  DataTimezone <- FALSE
+                }else{
+                axisYears<-NULL
+                tickerYears <- NULL
+                DataTimezone <- TRUE
+                }
+
+                dygraph(dataxts,group="groupe",main = paste(unique(outp[,"typeVariable"])," (",y,")",sep=""),ylab = unique(outp[,"unite"])[[1]],height = 250,width="100%")%>%
+                dyAxis("x", axisLabelFormatter=axisYears,
+                ticker= tickerYears) %>%
+                dyOptions(stackedGraph = FALSE) %>%
+                dyRangeSelector(height = 20,strokeColor = "") %>%
+                dyLegend(show = "onmouseover") %>% 
+                dyOptions(colors = wes_palette("Zissou1", length(unique(outp$variable)),type = "continuous"),retainDateWindow=TRUE,useDataTimezone=TRUE)%>%
+                dyRangeSelector(dateWindow = dateWindow,retainDateWindow=TRUE)%>%
+                dyCSScool() %>%
+                dyHighlight(highlightSeriesBackgroundAlpha = 0.8,highlightSeriesOpts = list(strokeWidth = 3))
+            })            
+        })#fin de res
+  }
+    dy_graph <- tagList(res)
+    return(dy_graph)
+}
+
 
 dygraphSite <- function(subsetoutbd,frequence){
   if(nrow(subsetoutbd)==0){

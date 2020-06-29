@@ -2,7 +2,6 @@
 translator <- Translator$new(translation_csvs_path = "translation")
 translator$set_translation_language("en")
 language <- "en"
-# Voir ensuite pour calculer le nombre de variable et c'est tout...
 
 # uiExtraction
 mod_extractiondatasetUI <- function(id){
