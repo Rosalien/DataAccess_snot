@@ -15,7 +15,7 @@ ui <- fluidPage(theme =shinytheme("flatly"),
   	useShinyjs(),
     inlineCSS(appCSS()),
     # Loading message
-    div(id = "loading-content",withSpinner(h4(translator$t("Chargement ...")),type=1)),
+    div(id = "loading-content",withSpinner(h4(translator$t("Chargement ...")),type=4)),
   	hidden(
   	div(
   		id = "app-content",
