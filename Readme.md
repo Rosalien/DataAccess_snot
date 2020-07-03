@@ -26,8 +26,8 @@
 avec :
 
 - app.R : Fichier principal pour construire les applications (lancement des modules et dépendances)
-- mod_carto.R : Module "Welcome" de l'application data-access : pour présenter la cartographie des sites, des stations et les données disponibles
-- mod_extraction.R : Module Access-data de l'application data-access : pour visualiser et extraire les données. *Ce module devra être éclaté en plusieurs sous-modules pour faciliter sa maintenance*
+- mod_welcome.R : Module "Welcome" de l'application data-access : pour présenter la cartographie des sites, des stations et les données disponibles
+- mod_accessdata.R : Module Access-data de l'application data-access : pour visualiser et extraire les données. *Ce module devra être éclaté en plusieurs sous-modules pour faciliter sa maintenance*
 - mod_extractiondataset.R : Module principal de l'application dataset-archive : extrait les jeux de données selon le standard PIVOT/OZCAR ou Zenodo
 - confConnexion.R : Paramètres de connexion vers les bases de données *Fichier sensible, ne pas versionner*
 - dependanciesCSS.R : Dépendances sur des aspects de styles pour l'appli (pour les figures, pour l'appli...)

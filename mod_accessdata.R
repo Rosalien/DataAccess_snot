@@ -3,7 +3,7 @@ translator$set_translation_language("en")
 language <- "en"
 
 # uiExtraction
-mod_extractionUI <- function(id,translationVariable){
+mod_accessdataUI <- function(id,translationVariable){
   ns <- NS(id)
 
   # Pour mettre des checkboxs sur différentes colonnes
@@ -171,10 +171,11 @@ tabPanel(translator$t("Accès aux données"),
             checkboxGroupInput(ns('facetWrapOption1'),label=translator$t("Détail par"),inline=TRUE,choices = c("month","season","year","dayNight"),selected=NULL),
             withSpinner(dataTableOutput(ns("SummaryData")),type=5)# end of "chart" tab panel
             ),
-          tabPanel(p(icon("chart-bar"),translator$t("Boxplot")),
-            radioButtons(ns('facetWrapOption2'),label=translator$t("Détail par"),inline=TRUE,choices = c(translator$t("Sans"),"month","season","year","dayNight"),selected=translator$t("Sans")),
-            withSpinner(plotOutput(ns("boxPlotggplotSite")),type=5),
-            withSpinner(uiOutput(ns("boxPlotggplotTypeVariable")),type=5)),
+          # Suppression de la partie boxplot dans l'appli, très peu utilisé
+          #tabPanel(p(icon("chart-bar"),translator$t("Boxplot")),
+            #radioButtons(ns('facetWrapOption2'),label=translator$t("Détail par"),inline=TRUE,choices = c(translator$t("Sans"),"month","season","year","dayNight"),selected=translator$t("Sans")),
+            #withSpinner(plotOutput(ns("boxPlotggplotSite")),type=5),
+            #withSpinner(uiOutput(ns("boxPlotggplotTypeVariable")),type=5)),
           tabPanel(p(icon("chart-bar"),translator$t("Construire un graphique")),
                     esquisserUI(id = ns("esquisse"),header = FALSE,choose_data = FALSE)
               ),
@@ -230,7 +231,7 @@ tabPanel(translator$t("Accès aux données"),
 )
 }
 
-mod_extraction <- function(input, output, session,translationVariable){
+mod_accessdata <- function(input, output, session,translationVariable){
   my_wd <- getwd()
   ns <- session$ns
 
@@ -458,37 +459,37 @@ output$underCitation <- DT::renderDataTable({
       }else{}
 })
 
-# renderUI pour les boxplot 
+# renderUI pour les boxplot (supprimer)
 # Comparaisons entre sites (la construction est décomposée pour l'affichage des messages)
-    output$boxPlotggplotSite <- renderPlot({  
-      withProgress(message = i18n()$t("Préparation des données ..."),{
+    #output$boxPlotggplotSite <- renderPlot({  
+      #withProgress(message = i18n()$t("Préparation des données ..."),{
         
-        incProgress(0.3,i18n()$t("Requête de la base de données ..."))       
-        print("Requête pour boxplot")
-        data <- sqlOutputQuery()
-        dbDayandNight <- dbDayNight(data)
+        #incProgress(0.3,i18n()$t("Requête de la base de données ..."))       
+        #print("Requête pour boxplot")
+        #data <- sqlOutputQuery()
+        #dbDayandNight <- dbDayNight(data)
 
-        incProgress(0.3,i18n()$t("Aggrégation des données ..."))
-        print("Aggrégation pour boxplot")
-        subsetoutbdSNOT <- dbselect(dbDayandNight,dayNightSelected(),frequenceSelected(),siteSelected(),variableSelected())  
+        #incProgress(0.3,i18n()$t("Aggrégation des données ..."))
+        #print("Aggrégation pour boxplot")
+        #subsetoutbdSNOT <- dbselect(dbDayandNight,dayNightSelected(),frequenceSelected(),siteSelected(),variableSelected())  
 
-        incProgress(0.3,i18n()$t("Préparation du graphique ..."))
-        print("Préparation boxplot")
+        #incProgress(0.3,i18n()$t("Préparation du graphique ..."))
+        #print("Préparation boxplot")
         
-        boxplotSite <- ggplotBoxplotSite(subsetoutbdSNOT[grepl("SWC|TS|G_", subsetoutbdSNOT$variable)==FALSE,],facetWrapSelectedChart())
-        print("Mise en page des boxplot")
+        #boxplotSite <- ggplotBoxplotSite(subsetoutbdSNOT[grepl("SWC|TS|G_", subsetoutbdSNOT$variable)==FALSE,],facetWrapSelectedChart())
+        #print("Mise en page des boxplot")
         #print("if#407")
-        if(!is.null(boxplotSite))(do.call(grid_arrange_shared_legend,c(boxplotSite,list(position="bottom"))))
+        #if(!is.null(boxplotSite))(do.call(grid_arrange_shared_legend,c(boxplotSite,list(position="bottom"))))
 
-        incProgress(0.1,i18n()$t("Finalisation ..."))
-        })
-})
+        #incProgress(0.1,i18n()$t("Finalisation ..."))
+        #})
+#})
     
-# renderUI pour les Boxplot des variables meteosol
-  output$boxPlotggplotTypeVariable <- renderUI({
-      subsetoutbdSNOT <- sqlOutputAndAggregate()
-      plotlyboxplotTypeVariable(subsetoutbdSNOT[grepl("SWC|TS|G_", subsetoutbdSNOT$variable)==TRUE,])
-})#
+# renderUI pour les Boxplot des variables meteosol (supprimer)
+#  output$boxPlotggplotTypeVariable <- renderUI({
+      #subsetoutbdSNOT <- sqlOutputAndAggregate()
+      #plotlyboxplotTypeVariable(subsetoutbdSNOT[grepl("SWC|TS|G_", subsetoutbdSNOT$variable)==TRUE,])
+#})#
 
 
 # renderUI pour la construction des graphiques à façon
@@ -638,9 +639,9 @@ facetWrapSelectedTable <- reactive({
 })
 
 # reactive pour le croisement des données des boxplots
-facetWrapSelectedChart <- reactive({
-    input$facetWrapOption2
-})
+#facetWrapSelectedChart <- reactive({
+#    input$facetWrapOption2
+#})
 
 # Désactivation du bouton télécharger si aucune variable est sélectionnée
   observe({

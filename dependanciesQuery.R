@@ -1,6 +1,6 @@
 # Chargement des paramètres de connexion
 source("confConnexion.R")
-pool <- confConnexion(dbWork="prod_local")#prod, prod_local,local (voir configuration dans confConnexion.R)
+pool <- confConnexion(dbWork="local")#prod, prod_local,local (voir configuration dans confConnexion.R)
 
 tableJeu <- function(x){
   query <- paste("select * from jeu",sep="")

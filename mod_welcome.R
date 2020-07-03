@@ -6,7 +6,7 @@ translator$set_translation_language("en")
 language <- "en"
 allSite <- "All peatlands"
 
-mod_cartoUI <- function(id){
+mod_welcomeUI <- function(id){
   ns <- NS(id)
   tabPanel(translator$t("Bienvenue"),
   dashboardPage(
@@ -52,7 +52,7 @@ mod_cartoUI <- function(id){
   )
 }
 
-mod_carto <- function(input, output, session){
+mod_welcome <- function(input, output, session){
   ns <- session$ns
 
   # Internationalization des variables métadonnées

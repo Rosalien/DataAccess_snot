@@ -1,7 +1,7 @@
 source("dependancies.R")
-source("mod_carto.R")
+source("mod_welcome.R")
 #source("mod_extractiondataset.R")
-source("mod_extraction.R")
+source("mod_accessdata.R")
 source("mod_about.R")
 
 translator <- Translator$new(translation_csvs_path = "translation")
@@ -30,8 +30,8 @@ ui <- fluidPage(theme =shinytheme("flatly"),
               #,           
               #div(uiOutput('selectLanguage'),style="position:relative;top:-90px;left:1500px")
           ),
-          mod_cartoUI("map"),
-          mod_extractionUI("extraction"),
+          mod_welcomeUI("welcome"),
+          mod_accessdataUI("accessdata"),
           #mod_extractiondatasetUI("extractiondataset"),
           mod_aboutUI("about")
           )
@@ -54,8 +54,8 @@ server <- function(input, output, session) {
   	  show("app-content")
 
     	# Chargement des modules
-  	  carto <- callModule(mod_carto,"map")
-      extraction <- callModule(module=mod_extraction,"extraction")#,translationVariable = reactive(input$selected_language))
+  	  carto <- callModule(mod_welcome,"welcome")
+      extraction <- callModule(module=mod_accessdata,"accessdata")#,translationVariable = reactive(input$selected_language))
       #extractiondataset <- callModule(module=mod_extractiondataset,"extractiondataset")
       about <- callModule(module=mod_about,"about")
   }
