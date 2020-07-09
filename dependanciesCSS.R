@@ -7,6 +7,7 @@ googleAnalyticsParameter <- function(...){
         window.dataLayer = window.dataLayer || [];
         function gtag(){dataLayer.push(arguments);}
         gtag(\'js\', new Date());
+        gtag(\'set\',\'cookie_expires\',395*24*60*60); //Mesure RGPD : IP anonymisées et cookies réduit à 13mois max de conservation
         gtag(\'config\', \'UA-143674771-1\');
         </script>'
 }
