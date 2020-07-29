@@ -1,6 +1,6 @@
 source("dependancies.R")
 source("mod_welcome.R")
-#source("mod_extractiondataset.R")
+source("mod_extractiondataset.R")
 source("mod_accessdata.R")
 source("mod_about.R")
 
@@ -26,13 +26,13 @@ ui <- fluidPage(theme =shinytheme("flatly"),
         ),
     		navbarPage(
           fluidRow(       
-              div(img(src="https://www.sno-tourbieres.cnrs.fr/wp-content/uploads/2017/11/logo_Tourbieres.jpg",height = "60px",style = "position: relative; top: -20px;left:0px;"), "")
+              div(img(src="https://raw.githubusercontent.com/Rosalien/doc_snot/master/Figures/logo_Tourbieres.jpg",height = "60px",style = "position: relative; top: -20px;left:0px;"), "")
               #,           
               #div(uiOutput('selectLanguage'),style="position:relative;top:-90px;left:1500px")
           ),
           mod_welcomeUI("welcome"),
           mod_accessdataUI("accessdata"),
-          #mod_extractiondatasetUI("extractiondataset"),
+          mod_extractiondatasetUI("extractiondataset"),
           mod_aboutUI("about")
           )
     			)#navbar
@@ -56,7 +56,7 @@ server <- function(input, output, session) {
     	# Chargement des modules
   	  carto <- callModule(mod_welcome,"welcome")
       extraction <- callModule(module=mod_accessdata,"accessdata")#,translationVariable = reactive(input$selected_language))
-      #extractiondataset <- callModule(module=mod_extractiondataset,"extractiondataset")
+      extractiondataset <- callModule(module=mod_extractiondataset,"extractiondataset")
       about <- callModule(module=mod_about,"about")
   }
 
