@@ -1,11 +1,5 @@
 # Génération de la carte
 ## Requête pour site/station
-
-translator <- Translator$new(translation_csvs_path = "translation")
-translator$set_translation_language("en")
-language <- "en"
-allSite <- "All peatlands"
-
 mod_welcomeUI <- function(id){
   ns <- NS(id)
   tabPanel(translator$t("Bienvenue"),
@@ -56,7 +50,6 @@ mod_welcome <- function(input, output, session){
   ns <- session$ns
 
   # Internationalization des variables métadonnées
-  language <- translator$translation_language
   metadataVariable <- c("type")
 
   # On assigne aux variables metadataVariable le nom de colonne internationalisé (utile??)

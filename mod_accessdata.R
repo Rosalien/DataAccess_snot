@@ -1,6 +1,3 @@
-translator <- Translator$new(translation_csvs_path = "translation")
-translator$set_translation_language("en")
-language <- "en"
 
 # uiExtraction
 mod_accessdataUI <- function(id,translationVariable){
@@ -231,9 +228,17 @@ tabPanel(translator$t("Accès aux données"),
 )
 }
 
-mod_accessdata <- function(input, output, session,translationVariable){
+mod_accessdata <- function(input, output, session,translationVariable=NULL){
   my_wd <- getwd()
   ns <- session$ns
+  
+# Reactive pour le changement de langue, en test pour le moment
+i18n <- reactive({
+  selectedLanguage <- language#input$selected_language
+  translator$set_translation_language(selectedLanguage)
+  print(selectedLanguage)
+  translator
+})
 
 ##################################Chargement des données####################################
   col_station <- read.csv("www/csv/datatype_couleur.csv",sep=";",header=TRUE,stringsAsFactors=FALSE)
@@ -541,14 +546,6 @@ output$underCitation <- DT::renderDataTable({
 
 
 ################################################Reactive et Observe####################################
-
-# Reactive pour le changement de langue, en test pour le moment
-i18n <- reactive({
-  selectedLanguage <- "en"#input$selected_language
-  translator$set_translation_language(selectedLanguage)
-  print(selectedLanguage)
-  translator
-})
 
 # obserEvent sur le rafraichissement de la page
 #observeEvent(input$refresh, {

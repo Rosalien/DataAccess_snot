@@ -1,11 +1,9 @@
 source("dependancies.R")
 source("mod_welcome.R")
-source("mod_extractiondataset.R")
+#source("mod_extractiondataset.R")
+source("global.R")
 source("mod_accessdata.R")
-source("mod_about.R")
-
-translator <- Translator$new(translation_csvs_path = "translation")
-translator$set_translation_language("en")
+#source("mod_about.R")
 
 ui <- fluidPage(theme =shinytheme("flatly"),
 
@@ -31,9 +29,9 @@ ui <- fluidPage(theme =shinytheme("flatly"),
               #div(uiOutput('selectLanguage'),style="position:relative;top:-90px;left:1500px")
           ),
           mod_welcomeUI("welcome"),
-          mod_accessdataUI("accessdata"),
-          mod_extractiondatasetUI("extractiondataset"),
-          mod_aboutUI("about")
+          mod_accessdataUI("accessdata")
+        #  mod_extractiondatasetUI("extractiondataset"),
+       #   mod_aboutUI("about")
           )
     			)#navbar
     		)#div
@@ -47,6 +45,9 @@ server <- function(input, output, session) {
                #selected = input$selected_language)
   #})
 
+      #rv <- reactiveValues(translationVariable = "en")
+
+
       # Simulate work being done for 5 second
     	Sys.sleep(5)  
     	# Hide the loading message when the rest of the server function has executed
@@ -55,11 +56,9 @@ server <- function(input, output, session) {
 
     	# Chargement des modules
   	  carto <- callModule(mod_welcome,"welcome")
-      extraction <- callModule(module=mod_accessdata,"accessdata")#,translationVariable = reactive(input$selected_language))
-      extractiondataset <- callModule(module=mod_extractiondataset,"extractiondataset")
-      about <- callModule(module=mod_about,"about")
+      extraction <- callModule(module=mod_accessdata,"accessdata")#,translationVariable = reactive(rv$translationVariable))
+      #extractiondataset <- callModule(module=mod_extractiondataset,"extractiondataset")
+      #about <- callModule(module=mod_about,"about")
   }
 
   shinyApp(ui, server)
-
-
