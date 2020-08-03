@@ -83,22 +83,6 @@ sqlOutputdatasetMetadata <- reactiveValues()
     })
   })
 
-  sqlOutputdataset <- reactive({
-    # Détermination des paramètres de la requête sur la base de la réactive jeu()
-    caracDataset <- caracdata(language)[code_jeu %in% checkinJeu$checked,]
-    variableJeu <- unique(caracDataset[,variable])
-    siteJeu <- unique(caracDataset[,code_site_station])
-    date_debut <- min(as.Date(unique(caracDataset[,mindate]),"%d-%m-%Y"))
-    date_fin <- max(as.Date(unique(caracDataset[,maxdate]),"%d-%m-%Y"))
-    periodeJeu <- c(date_debut,date_fin)
-  
-    # Lancement de la requête
-    data <- queryDataSNOT(variableJeu,siteJeu,periodeJeu)
-    # Transformation au format horizontal et création de dateEnd
-    data <- dcast(data, formula = code_site_station+date+time+datatype~variable, value.var = "value")
-    data[,dateEnd:=paste0(date,'T',time,'Z')]
-  })
-
 sqlOutputdatasetZENODO <- reactive({
     # Détermination des paramètres de la requête sur la base de la réactive jeu()
     caracDataset <- caracdata(language)[code_jeu %in% checkinJeu$checked,]
@@ -123,34 +107,38 @@ sqlOutputdatasetZENODO <- reactive({
     },
     content = function(fname){    
       withProgress(message = translator$t("Début de l'extraction ..."),{
-      incProgress(0.1,translator$t("Requête de la base de données ..."))
-      fileNameDataset <- paste("TOUR_DAT_",checkinJeu$checked,".zip",sep="")
-      setwd(tempdir())
-      pivotMetadata <- paste("TOUR_en.json", sep="")
-      print("Création de l'objet pivotHeaderAndData")
-      siteVariableJeu <- sqlOutputdatasetMetadata$siteVariable
-      #pivotHeaderAndData <- createFilePivot(sqlOutputdataset(),siteVariableJeu,caracJeu)
-      incProgress(0.5,translator$t("Création de la métadonnée ..."))
-      write(metadataJeuPivot(), pivotMetadata)
-      incProgress(0.2,translator$t("Création du fichier ..."))
-      print("Création des fichiers")
-
-      filePivotJeu <- lapply(unique(siteVariableJeu[,code_jeu]) ,function(x){
-        print(x)
-        siteVariable <- unique(caracdata(language)[code_jeu %in% x,list(code_site_station,variable)])
-        pivotHeaderAndData <- createFilePivot(sqlOutputdataset(),siteVariable,caracJeu)
-          lapply(1:nrow(siteVariable),function(x){
-            fileName <- pivotHeaderAndData[[x]]$fileName
-            writeHeaderPivot(pivotHeaderAndData[[x]][["data"]],fileName,pivotHeaderAndData[[x]][["header"]])
-            return(fileName)
-            })
-      })
-
-      incProgress(0.2,translator$t("Compression..."))
+        incProgress(0.1,translator$t("Requête de la base de données ..."))
+        fileNameDataset <- paste("TOUR_DAT_",checkinJeu$checked,".zip",sep="")
+        setwd(tempdir())
+        pivotMetadata <- paste("TOUR_en.json", sep="")
+        print("Création de l'objet pivotHeaderAndData")
       
-      lapply(1:length(filePivotJeu),function(x){
-        zip(zipfile=fileNameDataset[x],files=unlist(filePivotJeu[x]))
-      })
+        siteVariableJeu <- sqlOutputdatasetMetadata$siteVariable
+        #pivotHeaderAndData <- createFilePivot(sqlOutputdataset(),siteVariableJeu,caracJeu)
+        
+        incProgress(0.1,translator$t("Création de la métadonnée ..."))
+        write(metadataJeuPivot(), pivotMetadata)
+        
+        print("Création des fichiers")
+       
+        incProgress(0.05,translator$t("Création du fichier ..."))
+
+        filePivotJeu <- lapply(unique(siteVariableJeu[,code_jeu]) ,function(x){
+          incProgress(0.05,paste0(x))
+          siteVariable <- unique(caracdata(language)[code_jeu %in% x,list(code_site_station,variable)])
+          pivotHeaderAndData <- createFilePivot(sqlOutputdatasetTEST(language,x),siteVariable,caracJeu)            
+          lapply(1:nrow(siteVariable),function(x){
+              fileName <- pivotHeaderAndData[[x]]$fileName
+              writeHeaderFile(pivotHeaderAndData[[x]][["data"]],fileName,pivotHeaderAndData[[x]][["header"]])
+              return(fileName)
+              })
+        })
+        
+        incProgress(0.2,translator$t("Compression..."))
+      
+        lapply(1:length(filePivotJeu),function(x){
+          zip::zip(zipfile=fileNameDataset[x],files=unlist(filePivotJeu[x]),compression_level = 1)
+        })
 
       incProgress(0.2,translator$t("Finalisation ..."))
 
@@ -159,7 +147,7 @@ sqlOutputdatasetZENODO <- reactive({
       if (file.exists(paste0(fname, ".zip")))
         file.rename(paste0(fname, ".zip"), fname)  
       
-      zip(zipfile=fname,files=c(pivotMetadata,unlist(fileNameDataset)))
+      zip::zip(zipfile=fname,files=c(pivotMetadata,unlist(fileNameDataset)),compression_level = 1)
   
     setwd(my_wd)
     },
@@ -186,7 +174,7 @@ output$downloadDataZENODO <- downloadHandler(
       
       lapply(unique(siteVariableJeu[,code_jeu]) ,function(x){
               csvFile <- paste0("TOUR_DAT_",x,".csv")
-              write.csv(dataZENODO[code_site_station %in% siteVariableJeu[code_jeu %in% x,code_site_station],],csvFile,quote=FALSE,row.names=FALSE)
+              write_csv(dataZENODO[code_site_station %in% siteVariableJeu[code_jeu %in% x,code_site_station],],csvFile)
       })
 
       incProgress(0.5,translator$t("Création de la métadonnée ..."))

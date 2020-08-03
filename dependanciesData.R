@@ -179,7 +179,7 @@ lapply(1:nrow(siteVariable),function(x){
 })
 }
 
-writeHeaderPivot <- function(x, file, header, f = write.csv, ...){
+writeHeaderFile<- function(x, file, header){
 # create and open the file connection
   datafile <- file(file, open = 'wt')
 # close on exit
@@ -187,5 +187,22 @@ writeHeaderPivot <- function(x, file, header, f = write.csv, ...){
 # if a header is defined, write it to the file (@CarlWitthoft's suggestion)
 if(!missing(header)) writeLines(header,con=datafile)
 # write the file using the defined function and required addition arguments  
-  write.table(x, datafile,row.names=FALSE,col.names=TRUE,qmethod="escape",sep=";",fileEncoding = "UTF8")
+  write_csv(x, datafile)
 }
+
+sqlOutputdatasetTEST <- function(language,checkinJeu)({
+    # Détermination des paramètres de la requête sur la base de la réactive jeu()
+    caracDataset <- caracdata(language)[code_jeu %in% checkinJeu]
+    variableJeu <- unique(caracDataset[,variable])
+    siteJeu <- unique(caracDataset[,code_site_station])
+    date_debut <- min(as.Date(unique(caracDataset[,mindate]),"%d-%m-%Y"))
+    date_fin <- max(as.Date(unique(caracDataset[,maxdate]),"%d-%m-%Y"))
+    periodeJeu <- c(date_debut,date_fin)
+    print("début requete")
+    # Lancement de la requête
+    data <- queryDataSNOT(variableJeu,siteJeu,periodeJeu)
+    print("fin requete")
+    # Transformation au format horizontal et création de dateEnd
+    data <- dcast(data, formula = code_site_station+date+time+datatype~variable, value.var = "value")
+    data[,dateEnd:=paste0(date,'T',time,'Z')]
+  })

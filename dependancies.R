@@ -10,7 +10,7 @@ ipak <- function(pkg){
 listpaquets <- c("shiny","RPostgreSQL","DT","pool","leaflet","stringr","sp","dygraphs","xts","data.table","anytime",
 "curl","dplyr","wesanderson","shinyjs","shinycssloaders","shinyWidgets","plotly",
 "reshape","shinythemes","tableHTML","gridExtra","grid","shiny.i18n",
-"RColorBrewer","shinyalert","gsubfn","suncalc","rintrojs","esquisse","shinydashboard")
+"RColorBrewer","shinyalert","gsubfn","suncalc","rintrojs","esquisse","shinydashboard","readr")
 
 ipak(listpaquets)
 
