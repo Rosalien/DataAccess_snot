@@ -190,19 +190,22 @@ if(!missing(header)) writeLines(header,con=datafile)
   write_csv(x, datafile)
 }
 
-sqlOutputdatasetTEST <- function(language,checkinJeu)({
-    # Détermination des paramètres de la requête sur la base de la réactive jeu()
+sqlOutputDatasetArchive <- function(language,checkinJeu,archiveType="ZENODO")({
+    # Load parameters for queryDataSNOT
     caracDataset <- caracdata(language)[code_jeu %in% checkinJeu]
     variableJeu <- unique(caracDataset[,variable])
     siteJeu <- unique(caracDataset[,code_site_station])
     date_debut <- min(as.Date(unique(caracDataset[,mindate]),"%d-%m-%Y"))
     date_fin <- max(as.Date(unique(caracDataset[,maxdate]),"%d-%m-%Y"))
     periodeJeu <- c(date_debut,date_fin)
-    print("début requete")
+
     # Lancement de la requête
-    data <- queryDataSNOT(variableJeu,siteJeu,periodeJeu)
-    print("fin requete")
-    # Transformation au format horizontal et création de dateEnd
-    data <- dcast(data, formula = code_site_station+date+time+datatype~variable, value.var = "value")
-    data[,dateEnd:=paste0(date,'T',time,'Z')]
+    data <- queryDataSNOT(pool,variableJeu,siteJeu,periodeJeu,melted=FALSE)
+    
+    if(archiveType=="OZCAR")
+      {
+        data[,dateEnd:=paste0(date,'T',time,'Z')]
+      }else{
+        data[,c("datatype"):=NULL]
+      }
   })

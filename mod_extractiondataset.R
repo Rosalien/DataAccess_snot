@@ -83,22 +83,6 @@ sqlOutputdatasetMetadata <- reactiveValues()
     })
   })
 
-sqlOutputdatasetZENODO <- reactive({
-    # Détermination des paramètres de la requête sur la base de la réactive jeu()
-    caracDataset <- caracdata(language)[code_jeu %in% checkinJeu$checked,]
-    variableJeu <- unique(caracDataset[,variable])
-    siteJeu <- unique(caracDataset[,code_site_station])
-    date_debut <- min(as.Date(unique(caracDataset[,mindate]),"%d-%m-%Y"))
-    date_fin <- max(as.Date(unique(caracDataset[,maxdate]),"%d-%m-%Y"))
-    periodeJeu <- c(date_debut,date_fin)
-  
-    # Lancement de la requête
-    dataZENODO <- queryDataSNOT(variableJeu,siteJeu,periodeJeu)
-    # Transformation au format horizontal et création de dateEnd
-    dataZENODO <- dcast(dataZENODO, formula = code_site_station+date+time+datatype~variable, value.var = "value")
-    dataZENODO[,c("datatype"):=NULL]
-  })
-
     # Téléchargement d'une archive OZCAR
     output$downloadDataOZCAR <- downloadHandler(
 
@@ -126,7 +110,7 @@ sqlOutputdatasetZENODO <- reactive({
         filePivotJeu <- lapply(unique(siteVariableJeu[,code_jeu]) ,function(x){
           incProgress(0.05,paste0(x))
           siteVariable <- unique(caracdata(language)[code_jeu %in% x,list(code_site_station,variable)])
-          pivotHeaderAndData <- createFilePivot(sqlOutputdatasetTEST(language,x),siteVariable,caracJeu)            
+          pivotHeaderAndData <- createFilePivot(sqlOutputDatasetArchive(language,x,archiveType="OZCAR"),siteVariable,caracJeu)            
           lapply(1:nrow(siteVariable),function(x){
               fileName <- pivotHeaderAndData[[x]]$fileName
               writeHeaderFile(pivotHeaderAndData[[x]][["data"]],fileName,pivotHeaderAndData[[x]][["header"]])
@@ -137,7 +121,7 @@ sqlOutputdatasetZENODO <- reactive({
         incProgress(0.2,translator$t("Compression..."))
       
         lapply(1:length(filePivotJeu),function(x){
-          zip::zip(zipfile=fileNameDataset[x],files=unlist(filePivotJeu[x]),compression_level = 1)
+          zip::zipr(zipfile=fileNameDataset[x],files=unlist(filePivotJeu[x]),compression_level = 1)
         })
 
       incProgress(0.2,translator$t("Finalisation ..."))
@@ -147,7 +131,7 @@ sqlOutputdatasetZENODO <- reactive({
       if (file.exists(paste0(fname, ".zip")))
         file.rename(paste0(fname, ".zip"), fname)  
       
-      zip::zip(zipfile=fname,files=c(pivotMetadata,unlist(fileNameDataset)),compression_level = 1)
+      zip::zipr(zipfile=fname,files=c(pivotMetadata,unlist(fileNameDataset)),compression_level = 1)
   
     setwd(my_wd)
     },
@@ -170,7 +154,7 @@ output$downloadDataZENODO <- downloadHandler(
       siteVariableJeu <- sqlOutputdatasetMetadata$siteVariable
       csvDataFileZENODO <- paste0("TOUR_DAT_",checkinJeu$checked,".csv")
               
-      dataZENODO <- sqlOutputdatasetZENODO()
+      dataZENODO <- sqlOutputDatasetArchive(language,checkinJeu$checked)
       
       lapply(unique(siteVariableJeu[,code_jeu]) ,function(x){
               csvFile <- paste0("TOUR_DAT_",x,".csv")
@@ -186,7 +170,7 @@ output$downloadDataZENODO <- downloadHandler(
       if (file.exists(paste0(fname, ".zip")))
         file.rename(paste0(fname, ".zip"), fname)  
       
-      zip(zipfile=fname,files=c(pivotMetadata,csvDataFileZENODO))
+      zip::zipr(zipfile=fname,files=c(pivotMetadata,csvDataFileZENODO))
   
     setwd(my_wd)
     },

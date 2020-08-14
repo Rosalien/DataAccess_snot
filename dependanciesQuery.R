@@ -56,7 +56,7 @@ setkey(data, variable,code_site_station, datatype)
 return(data)
 }
 
-queryDataSNOT <- function(variableSelected,siteSelected,periodeSelected){
+queryDataSNOT <- function(pool,variableSelected,siteSelected,periodeSelected,melted=TRUE){
   variablequery <- as.matrix(paste("max(case when variable='",variableSelected,"' then value else null end) \"",variableSelected,"\"",sep=""))
   variablecharacter <- apply(variablequery,2,paste,collapse=",")
 
@@ -68,14 +68,15 @@ queryDataSNOT <- function(variableSelected,siteSelected,periodeSelected){
       group by code_site_station, date, time,datatype",sep="")
 
   data <- setDT(dbGetQuery(pool, queryValueSNOT))
-
-  # Partie à optimiser
-  meltvalue <- reshape::melt(data,id=1:4,na.rm=TRUE)
-  is.na(meltvalue$value) <- meltvalue$value==-9999  
-  meltvalue$variable <- as.character(meltvalue$variable)
-  setkey(meltvalue, variable, code_site_station, datatype)
-
-  return(meltvalue)
+  if(melted==TRUE){
+    meltvalue <- setDT(reshape::melt(data,id=1:4,na.rm=TRUE))
+    is.na(meltvalue$value) <- meltvalue$value==-9999  
+    meltvalue$variable <- as.character(meltvalue$variable)
+    setkey(meltvalue, variable, code_site_station, datatype)  
+    return(meltvalue)
+  }else{
+      return(data)
+  }
 }
 
 # Requête elasticsearch en test (pour le moment, trop long)
